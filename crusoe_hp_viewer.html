@@ -5,20 +5,19 @@
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>3D Viewer</title>
 
-<!-- ספרייה מוצמדת לגרסה (פחות רידיירקטים/הפתעות) -->
 <script type="module" src="https://unpkg.com/@google/model-viewer@3.3.0/dist/model-viewer.min.js"></script>
 
 <style>
   html,body{margin:0;background:transparent}
-  .wrap{max-width:980px;margin:0 auto;padding:12px}
+  .wrap{max-width:980px;margin:0 auto;padding:0px}
   model-viewer{
     width:100%;
-    height:520px;           /* גובה קבוע למובייל כדי למנוע קפיצות */
+    height:100%px;            /* גובה קבוע מייצב מובייל */
     background:transparent;
-    border-radius:16px;
+    border-radius:0px;
   }
-  @media (max-width:480px){
-    model-viewer{height:460px;} /* טיפונת יותר גובה במסכים קטנים */
+  @media (max-width:600px){
+    model-viewer{height:460px;}
   }
 </style>
 </head>
@@ -27,7 +26,7 @@
     <model-viewer id="mv"
       src="https://sigallshaull-del.github.io/CAELI-3D/Crusoe_HP_08.glb"
       poster="https://static.wixstatic.com/media/46e83d_9773fd7a0e9b4646aa02baf3bc7bed8b~mv2.png"
-      reveal="interaction"
+      reveal="auto"
       alt="CRUSOE HP 3D"
       camera-controls
       crossorigin="anonymous">
@@ -35,13 +34,11 @@
   </div>
 
   <script>
-    // נדליק סיבוב רק אחרי שהמודל נטען (פחות עומס בטעינה)
     const mv = document.getElementById('mv');
     mv.addEventListener('load', () => { mv.autoRotate = true; });
-
-    // fallback: קליק בכל מקום בדף יבטל את הפוסטר (אם הוא "תופס" את האירוע במובייל)
-    document.addEventListener('click', () => { try{ mv.dismissPoster(); }catch(e){} }, { once:true });
-    document.addEventListener('keydown', () => { try{ mv.dismissPoster(); }catch(e){} }, { once:true });
+    mv.addEventListener('error', (e) => {
+      console.error('Model failed to load', e?.detail);
+    });
   </script>
 </body>
 </html>
