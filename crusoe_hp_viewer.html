@@ -2,32 +2,30 @@
 <html lang="en">
 <head>
 <meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
 <title>3D Viewer</title>
 
+<!-- model-viewer (גרסה מוצמדת) -->
 <script type="module" src="https://unpkg.com/@google/model-viewer@3.3.0/dist/model-viewer.min.js"></script>
 
 <style>
   html,body{margin:0;background:transparent}
-  .wrap{max-width:980px;margin:0 auto;padding:0px}
+  .wrap{max-width:980px;margin:0 auto;padding:0}
   model-viewer{
     width:100%;
-    height:550px;            /* גובה קבוע מייצב מובייל */
+    height:550px;               /* גובה קבוע מייצב מובייל */
     background:transparent;
-    border-radius:0px;
+    border-radius:0;
+    /* הסתרת פס ההתקדמות */
+    --progress-bar-color: transparent;
+    --progress-bar-height: 0px;
   }
   @media (max-width:600px){
-    model-viewer{height:460px;}
+    model-viewer{height:460px}
   }
-    model-viewer{
-    --progress-bar-color: transparent; /* מסתיר את הצבע */
-    --progress-bar-height: 0px;        /* אופציונלי, מוריד גובה לאפס */
-  }
-
-  /* 2) דרך Shadow Parts (לחלק מהגרסאות) */
-  model-viewer::part(default-progress-bar){ display:none; }
-  model-viewer::part(progress-bar){ display:none; } /* כיסוי לגרסאות אחרות */
-  
+  /* כיסוי לגרסאות שונות של progress bar */
+  model-viewer::part(default-progress-bar){ display:none }
+  model-viewer::part(progress-bar){ display:none }
 </style>
 </head>
 <body>
@@ -44,9 +42,32 @@
 
   <script>
     const mv = document.getElementById('mv');
-    mv.addEventListener('load', () => { mv.autoRotate = true; });
+
+    // זיהוי iOS (כולל iPadOS ב-desktop mode)
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+                  (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+
+    // כוונונים להקטנת עומס במובייל לפני תחילת אינטראקציה
+    mv.addEventListener('load', () => {
+      try {
+        if ('renderScale' in mv) mv.renderScale = isIOS ? 0.7 : 0.85; // פחות פיקסלים → פחות עומס
+        if (isIOS) mv.shadowIntensity = 0.0;                           // צללים כבדים במובייל
+      } catch(e){}
+      if (!isIOS) mv.autoRotate = true;                                // לא מעמיסים iOS בזמן אמת
+    });
+
+    // לעתים ב-iOS הפוסטר לא נעלם למרות reveal="auto" → נכפה הסרה עדינה
+    const forceDismiss = () => { try { mv.dismissPoster(); } catch(_) {} };
+    setTimeout(forceDismiss, 1200);
+    mv.addEventListener('click', forceDismiss, { once:true });
+    mv.addEventListener('touchstart', forceDismiss, { passive:true, once:true });
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden) setTimeout(forceDismiss, 200);
+    }, { once:true });
+
+    // דיבוג/ניטור שגיאות טעינה
     mv.addEventListener('error', (e) => {
-      console.error('Model failed to load', e?.detail);
+      console.error('Model failed to load', e?.detail || e);
     });
   </script>
 </body>
