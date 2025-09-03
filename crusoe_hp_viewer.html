@@ -19,6 +19,15 @@
   @media (max-width:600px){
     model-viewer{height:460px;}
   }
+    model-viewer{
+    --progress-bar-color: transparent; /* מסתיר את הצבע */
+    --progress-bar-height: 0px;        /* אופציונלי, מוריד גובה לאפס */
+  }
+
+  /* 2) דרך Shadow Parts (לחלק מהגרסאות) */
+  model-viewer::part(default-progress-bar){ display:none; }
+  model-viewer::part(progress-bar){ display:none; } /* כיסוי לגרסאות אחרות */
+  
 </style>
 </head>
 <body>
